@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Untuk Kamu — Sebuah Cerita</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:wght@300;400;500&family=Playfair+Display:ital,wght@1,400;1,700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ch1-bg:#fef6ed; --ch1-accent:#d9714e; --ch1-a2:#f0a472;
+      --ch1-text:#3a2518; --ch1-muted:#9a6a52;
+      --ch2-bg:#0b1520; --ch2-accent:#6aaec8; --ch2-a2:#4d8fa8;
+      --ch2-text:#cce4f0; --ch2-muted:#7aaabb;
+      --ch3-bg:#181620; --ch3-accent:#8e7fc0; --ch3-a2:#b8aee0;
+      --ch3-text:#cec8e4; --ch3-muted:#9080b0;
+      --ch4-bg:#0a1f14; --ch4-accent:#52b07e; --ch4-a2:#7dd4a4;
+      --ch4-text:#c0e8d0; --ch4-muted:#70a888;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; scroll-snap-type:y mandatory; }
+    body { font-family:'DM Sans',sans-serif; overflow-x:hidden; }
+
+    /* Progress */
+    #progress-bar {
+      position:fixed;top:0;left:0;height:3px;z-index:9999;width:0%;
+      background:linear-gradient(90deg,#d9714e,#8e7fc0,#52b07e);
+      transition:width 0.25s ease;
+    }
+    /* Nav dots */
+    #nav-dots {
+      position:fixed;right:14px;top:50%;transform:translateY(-50%);
+      z-index:1000;display:flex;flex-direction:column;gap:10px;
+    }
+    .dot {
+      width:7px;height:7px;border-radius:50%;
+      background:rgba(255,255,255,0.28);cursor:pointer;
+      transition:all 0.3s;border:1.5px solid rgba(255,255,255,0.45);
+    }
+    .dot.active { transform:scale(1.65);background:white; }
+
+    /* Chapter shell */
+    .chapter {
+      min-height:100dvh;scroll-snap-align:start;
+      display:flex;flex-direction:column;
+      position:relative;overflow:hidden;
+    }
+    .ch-content {
+      position:relative;z-index:2;
+      padding:4.5rem 1.8rem 3rem;
+      flex:1;display:flex;flex-direction:column;
+    }
+    .ch-label {
+      font-size:0.6rem;font-weight:500;letter-spacing:0.3em;
+      text-transform:uppercase;opacity:0.42;margin-bottom:1.2rem;
+      display:block;
+    }
+    .ch-divider { height:1px;background:currentColor;opacity:0.1;margin:2.25rem 0; }
+    .sp-xs { display:block;height:0.65rem; }
+    .sp-sm { display:block;height:1.25rem; }
+    .sp-md { display:block;height:2rem; }
+    .sp-lg { display:block;height:2.75rem; }
+    .nav-row {
+      display:flex;justify-content:space-between;align-items:center;
+      margin-top:auto;padding-top:3rem;
+    }
+    .btn-story {
+      display:inline-flex;align-items:center;gap:7px;
+      padding:0.6rem 1.35rem;border-radius:999px;
+      font-size:0.8rem;font-weight:500;letter-spacing:0.04em;
+      border:none;cursor:pointer;transition:all 0.25s;text-decoration:none;
+    }
+    .btn-back {
+      background:transparent;color:rgba(255,255,255,0.38);
+      border:1px solid rgba(255,255,255,0.15);font-size:0.78rem;
+    }
+    .btn-back:hover { color:rgba(255,255,255,0.65); }
+
+    /* ─── Reveal animation ─── */
+    .chapter-enter .ch-content > * { opacity:0;transform:translateY(22px); }
+    .chapter-visible .ch-content > *:nth-child(1)  { animation:reveal 0.65s 0.05s ease both; }
+    .chapter-visible .ch-content > *:nth-child(2)  { animation:reveal 0.65s 0.14s ease both; }
+    .chapter-visible .ch-content > *:nth-child(3)  { animation:reveal 0.65s 0.22s ease both; }
+    .chapter-visible .ch-content > *:nth-child(4)  { animation:reveal 0.65s 0.30s ease both; }
+    .chapter-visible .ch-content > *:nth-child(5)  { animation:reveal 0.65s 0.38s ease both; }
+    .chapter-visible .ch-content > *:nth-child(6)  { animation:reveal 0.65s 0.46s ease both; }
+    .chapter-visible .ch-content > *:nth-child(7)  { animation:reveal 0.65s 0.53s ease both; }
+    .chapter-visible .ch-content > *:nth-child(8)  { animation:reveal 0.65s 0.60s ease both; }
+    .chapter-visible .ch-content > *:nth-child(9)  { animation:reveal 0.65s 0.66s ease both; }
+    .chapter-visible .ch-content > *:nth-child(10) { animation:reveal 0.65s 0.72s ease both; }
+    .chapter-visible .ch-content > *:nth-child(11) { animation:reveal 0.65s 0.77s ease both; }
+    .chapter-visible .ch-content > *:nth-child(12) { animation:reveal 0.65s 0.82s ease both; }
+    @keyframes reveal { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ============================
+       CH1 — warm cream
+    ============================ */
+    #ch1 { background:var(--ch1-bg);color:var(--ch1-text); }
+    .blob { position:absolute;border-radius:50%;filter:blur(65px);pointer-events:none; }
+    #ch1 .blob-1 { width:340px;height:340px;background:#f5c8a0;top:-100px;right:-100px;opacity:0.55; }
+    #ch1 .blob-2 { width:220px;height:220px;background:#f9d49a;bottom:60px;left:-70px;opacity:0.4; }
+    #ch1 .blob-3 { width:180px;height:180px;background:#fbe8d0;top:42%;right:15px;opacity:0.32; }
+    #ch1 .corner-br {
+      position:absolute;bottom:0;right:0;width:80px;height:80px;
+      border-bottom:2px solid rgba(217,113,78,0.2);
+      border-right:2px solid rgba(217,113,78,0.2);
+    }
+    #ch1 .corner-tl {
+      position:absolute;top:0;left:0;width:60px;height:60px;
+      border-top:2px solid rgba(217,113,78,0.15);
+      border-left:2px solid rgba(217,113,78,0.15);
+    }
+
+    #ch1 h1 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:3.1rem;font-weight:300;line-height:1.1;
+    }
+    #ch1 h1 em { font-style:italic;font-weight:600;color:var(--ch1-accent); }
+    #ch1 .subtitle {
+      font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:1.05rem;color:var(--ch1-muted);margin-top:0.5rem;line-height:1.7;
+    }
+    .sun-ring {
+      width:106px;height:106px;border-radius:50%;
+      background:conic-gradient(from 0deg,#f9c86a,#f08c4a,#d9714e,#f9c86a);
+      display:flex;align-items:center;justify-content:center;
+      animation:spin-slow 20s linear infinite;
+      box-shadow:0 0 44px rgba(217,113,78,0.32);flex-shrink:0;
+    }
+    .sun-inner {
+      width:74px;height:74px;border-radius:50%;
+      background:var(--ch1-bg);
+      display:flex;align-items:center;justify-content:center;font-size:1.9rem;
+    }
+    @keyframes spin-slow { to{transform:rotate(360deg)} }
+    #ch1 p { font-size:0.94rem;line-height:2;color:var(--ch1-muted); }
+
+    .confetti-strip { display:flex;gap:7px;align-items:center;flex-wrap:wrap; }
+    .c-dot { border-radius:3px;animation:c-bounce 1.4s ease-in-out infinite; }
+    @keyframes c-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
+
+    /* PHOTO: Polaroid wall */
+    .photo-section-title {
+      font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:1.02rem;opacity:0.82;
+    }
+    .photo-scroll-hint {
+      font-size:0.63rem;letter-spacing:0.1em;text-transform:uppercase;
+      opacity:0.32;text-align:center;margin-top:0.45rem;
+    }
+
+    .photo-wall {
+      display:flex;gap:13px;flex-wrap:nowrap;overflow-x:auto;
+      padding-bottom:8px;scrollbar-width:none;
+    }
+    .photo-wall::-webkit-scrollbar { display:none; }
+
+    .polaroid {
+      flex-shrink:0;background:#fffdf9;
+      padding:9px 9px 30px;
+      box-shadow:0 5px 22px rgba(90,40,10,0.13),0 2px 5px rgba(0,0,0,0.07);
+      border-radius:2px;transform:rotate(var(--rot,-2deg));
+      transition:transform 0.3s,box-shadow 0.3s;position:relative;
+    }
+    .polaroid:hover { transform:rotate(0deg) scale(1.04);box-shadow:0 10px 34px rgba(90,40,10,0.18); }
+    .polaroid-img {
+      width:128px;height:128px;background:#f0e4d8;
+      overflow:hidden;display:flex;align-items:center;justify-content:center;
+    }
+    .polaroid-img img { width:100%;height:100%;object-fit:cover; }
+    .p-placeholder {
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:5px;width:100%;height:100%;
+      color:#c49a7a;font-size:0.67rem;text-align:center;padding:8px;
+    }
+    .p-placeholder span { font-size:1.55rem; }
+    .polaroid-cap {
+      position:absolute;bottom:6px;left:0;right:0;text-align:center;
+      font-family:'Cormorant Garamond',serif;font-size:0.7rem;
+      font-style:italic;color:#9a7060;
+    }
+
+    .btn-ch1 {
+      background:var(--ch1-accent);color:white;
+      box-shadow:0 4px 18px rgba(217,113,78,0.28);
+    }
+    .btn-ch1:hover { transform:translateY(-2px);box-shadow:0 8px 28px rgba(217,113,78,0.38);color:white; }
+
+    /* ============================
+       CH2 — dark blue night
+    ============================ */
+    #ch2 { background:var(--ch2-bg);color:var(--ch2-text); }
+    #ch2 .starfield { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+    .star {
+      position:absolute;background:white;border-radius:50%;
+      animation:twinkle var(--dur,3s) ease-in-out infinite;opacity:0;
+    }
+    @keyframes twinkle { 0%,100%{opacity:0} 50%{opacity:var(--op,0.7)} }
+
+    #ch2 h2 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.6rem;font-weight:300;line-height:1.12;color:#e8f4fc;
+    }
+    #ch2 h2 em { font-style:italic;color:var(--ch2-accent); }
+    #ch2 p { font-size:0.93rem;line-height:2;color:var(--ch2-muted); }
+
+    .timeline { display:flex;flex-direction:column; }
+    .tl-item {
+      display:flex;gap:15px;align-items:flex-start;
+      padding-bottom:1.85rem;position:relative;
+    }
+    .tl-item:not(:last-child)::before {
+      content:'';position:absolute;left:11px;top:26px;
+      width:1.5px;bottom:0;
+      background:linear-gradient(to bottom,var(--ch2-accent),transparent);opacity:0.28;
+    }
+    .tl-dot {
+      width:24px;height:24px;border-radius:50%;flex-shrink:0;margin-top:2px;
+      background:rgba(106,174,200,0.09);border:1.5px solid rgba(106,174,200,0.42);
+      display:flex;align-items:center;justify-content:center;
+      font-size:0.68rem;color:var(--ch2-accent);
+    }
+    .tl-text { font-size:0.87rem;line-height:1.75;color:#7aaabb; }
+    .tl-text strong { color:var(--ch2-text);font-weight:500;display:block;font-size:0.92rem;margin-bottom:2px; }
+
+    /* PHOTO: Film strip */
+    .filmstrip {
+      background:#06101a;border-radius:8px;padding:10px 0;
+      position:relative;overflow:hidden;
+    }
+    .filmstrip::before,.filmstrip::after {
+      content:'';position:absolute;top:0;bottom:0;width:15px;
+      background:repeating-linear-gradient(
+        to bottom,transparent 0px,transparent 8px,
+        rgba(106,174,200,0.16) 8px,rgba(106,174,200,0.16) 14px
+      );
+    }
+    .filmstrip::before { left:0; }
+    .filmstrip::after  { right:0; }
+    .filmstrip-inner {
+      display:flex;gap:9px;overflow-x:auto;
+      padding:0 22px;scrollbar-width:none;
+    }
+    .filmstrip-inner::-webkit-scrollbar { display:none; }
+    .film-cell { flex-shrink:0;text-align:center; }
+    .film-frame {
+      width:108px;height:108px;background:#12243a;
+      border:1.5px solid rgba(106,174,200,0.18);border-radius:3px;
+      overflow:hidden;display:flex;align-items:center;justify-content:center;
+    }
+    .film-frame img { width:100%;height:100%;object-fit:cover; }
+    .film-lbl {
+      font-size:0.6rem;text-align:center;
+      color:rgba(106,174,200,0.4);letter-spacing:0.1em;margin-top:4px;
+    }
+    .f-placeholder {
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:5px;width:100%;height:100%;
+      color:rgba(106,174,200,0.38);font-size:0.63rem;text-align:center;padding:8px;
+    }
+    .f-placeholder span { font-size:1.45rem;opacity:0.45; }
+
+    .btn-ch2 {
+      background:rgba(106,174,200,0.1);color:var(--ch2-accent);
+      border:1px solid rgba(106,174,200,0.28);
+    }
+    .btn-ch2:hover { background:rgba(106,174,200,0.2);color:var(--ch2-accent); }
+
+    /* ============================
+       CH3 — dark mist
+    ============================ */
+    #ch3 { background:var(--ch3-bg);color:var(--ch3-text); }
+    #ch3 .fog-layer { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+    .fog-band {
+      position:absolute;width:200%;height:130px;border-radius:50%;
+      background:linear-gradient(90deg,transparent,rgba(142,127,192,0.07),transparent);
+      animation:fog-drift var(--spd,15s) ease-in-out infinite alternate;
+    }
+    @keyframes fog-drift { from{transform:translateX(-38%)} to{transform:translateX(0%)} }
+
+    #ch3 h2 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.6rem;font-weight:300;line-height:1.12;color:#eae6f8;
+    }
+    #ch3 h2 em { font-style:italic;color:var(--ch3-accent); }
+    #ch3 p { font-size:0.93rem;line-height:2;color:var(--ch3-muted); }
+
+    .mist-card {
+      background:rgba(142,127,192,0.07);
+      border:1px solid rgba(142,127,192,0.17);
+      border-radius:18px;padding:1.5rem 1.4rem;
+    }
+    .mist-card .qmark {
+      font-family:'Playfair Display',serif;font-size:3.2rem;
+      line-height:0.6;color:var(--ch3-accent);opacity:0.52;
+    }
+    .mist-card blockquote {
+      font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:1.1rem;line-height:1.78;color:#d4ceee;
+      border:none;padding:0;margin:0.4rem 0 0;
+    }
+    .mist-card cite {
+      display:block;font-size:0.7rem;letter-spacing:0.14em;
+      text-transform:uppercase;color:var(--ch3-accent);opacity:0.62;margin-top:0.9rem;
+    }
+
+    /* PHOTO: Ornate 2×2 grid */
+    .photo-grid {
+      display:grid;grid-template-columns:1fr 1fr;gap:11px;
+    }
+    .ornate {
+      position:relative;padding:5px;
+      background:rgba(142,127,192,0.05);
+      border:1px solid rgba(142,127,192,0.18);border-radius:4px;
+    }
+    .ornate::before,.ornate::after {
+      position:absolute;font-size:0.58rem;
+      color:var(--ch3-accent);opacity:0.45;
+    }
+    .ornate::before { content:'✦';top:3px;left:5px; }
+    .ornate::after  { content:'✦';bottom:3px;right:5px; }
+    .ornate-img {
+      width:100%;aspect-ratio:1;background:#1a1828;
+      overflow:hidden;display:flex;align-items:center;justify-content:center;
+    }
+    .ornate-img img { width:100%;height:100%;object-fit:cover; }
+    .o-placeholder {
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:5px;width:100%;height:100%;
+      color:rgba(142,127,192,0.35);font-size:0.63rem;text-align:center;padding:8px;
+    }
+    .o-placeholder span { font-size:1.35rem;opacity:0.42; }
+    .ornate-cap {
+      font-size:0.61rem;text-align:center;color:rgba(142,127,192,0.45);
+      font-style:italic;font-family:'Cormorant Garamond',serif;margin-top:4px;
+    }
+
+    .btn-ch3 {
+      background:rgba(142,127,192,0.1);color:var(--ch3-accent);
+      border:1px solid rgba(142,127,192,0.28);
+    }
+    .btn-ch3:hover { background:rgba(142,127,192,0.2);color:var(--ch3-accent); }
+
+    /* ============================
+       CH4 — deep green aurora
+    ============================ */
+    #ch4 { background:var(--ch4-bg);color:var(--ch4-text); }
+    #ch4 .aurora { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+    .aurora-band {
+      position:absolute;width:150%;left:-25%;height:210px;
+      filter:blur(55px);opacity:0.17;border-radius:50%;
+      animation:aurora-flow var(--spd,10s) ease-in-out infinite alternate;
+    }
+    @keyframes aurora-flow { from{transform:translateX(-8%) scaleY(1)} to{transform:translateX(8%) scaleY(1.24)} }
+
+    #ch4 h2 {
+      font-family:'Cormorant Garamond',serif;
+      font-size:2.6rem;font-weight:300;line-height:1.12;color:#dff5ec;
+    }
+    #ch4 h2 em { font-style:italic;color:var(--ch4-accent); }
+    #ch4 p { font-size:0.93rem;line-height:2;color:var(--ch4-muted); }
+
+    .wish-list { display:flex;flex-direction:column;gap:0.88rem; }
+    .wish-item {
+      display:flex;align-items:center;gap:14px;
+      background:rgba(82,176,126,0.07);
+      border:1px solid rgba(82,176,126,0.14);
+      border-radius:14px;padding:0.9rem 1rem;
+    }
+    .wish-icon {
+      width:36px;height:36px;border-radius:10px;
+      background:rgba(82,176,126,0.12);
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.05rem;flex-shrink:0;
+    }
+    .wish-text { font-size:0.87rem;line-height:1.55;color:#80c8a0; }
+    .wish-text strong { display:block;color:#c4ecda;font-size:0.91rem;font-weight:500;margin-bottom:1px; }
+
+    /* PHOTO: Botanical scrollable */
+    .botanical-wrap {
+      border:2px solid rgba(82,176,126,0.2);border-radius:18px;
+      padding:4px;background:rgba(82,176,126,0.04);
+      position:relative;overflow:hidden;
+    }
+    .leaf-corner {
+      position:absolute;font-size:1rem;opacity:0.22;
+      color:var(--ch4-accent);pointer-events:none;
+    }
+    .leaf-corner.tl { top:4px;left:7px;transform:rotate(-30deg); }
+    .leaf-corner.tr { top:4px;right:7px;transform:rotate(30deg); }
+    .leaf-corner.bl { bottom:4px;left:7px;transform:rotate(210deg); }
+    .leaf-corner.br { bottom:4px;right:7px;transform:rotate(150deg); }
+
+    .botanical-scroll {
+      display:flex;gap:9px;overflow-x:auto;
+      padding:10px 14px;scrollbar-width:none;
+    }
+    .botanical-scroll::-webkit-scrollbar { display:none; }
+    .botanical-cell { flex-shrink:0;text-align:center; }
+    .botanical-photo {
+      width:104px;height:104px;border-radius:10px;
+      background:#112219;border:1px solid rgba(82,176,126,0.17);
+      overflow:hidden;display:flex;align-items:center;justify-content:center;
+    }
+    .botanical-photo img { width:100%;height:100%;object-fit:cover; }
+    .b-placeholder {
+      display:flex;flex-direction:column;align-items:center;justify-content:center;
+      gap:5px;width:100%;height:100%;
+      color:rgba(82,176,126,0.37);font-size:0.63rem;text-align:center;padding:8px;
+    }
+    .b-placeholder span { font-size:1.35rem;opacity:0.38; }
+    .botanical-cap {
+      font-size:0.61rem;text-align:center;color:rgba(82,176,126,0.42);
+      font-family:'Cormorant Garamond',serif;font-style:italic;margin-top:4px;
+    }
+
+    .final-seal { text-align:center;padding:0.75rem 0; }
+    .seal-ring {
+      width:92px;height:92px;border-radius:50%;
+      border:2px solid rgba(82,176,126,0.32);
+      display:inline-flex;align-items:center;justify-content:center;font-size:2.2rem;
+      animation:pulse-seal 3.5s ease-in-out infinite;
+    }
+    @keyframes pulse-seal {
+      0%,100%{box-shadow:0 0 0 0 rgba(82,176,126,0.18)}
+      50%{box-shadow:0 0 0 18px rgba(82,176,126,0)}
+    }
+    .seal-tagline {
+      font-family:'Cormorant Garamond',serif;font-style:italic;
+      font-size:1.02rem;color:rgba(192,232,208,0.55);margin-top:0.65rem;
+    }
+    .btn-ch4 {
+      background:rgba(82,176,126,0.1);color:var(--ch4-accent);
+      border:1px solid rgba(82,176,126,0.26);
+    }
+    .btn-ch4:hover { background:rgba(82,176,126,0.2);color:var(--ch4-accent); }
+  </style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+<nav id="nav-dots" aria-label="Chapter navigation">
+  <div class="dot active" data-ch="0"></div>
+  <div class="dot" data-ch="1"></div>
+  <div class="dot" data-ch="2"></div>
+  <div class="dot" data-ch="3"></div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     CH1 — SELAMAT ULANG TAHUN
+═══════════════════════════════════════ -->
+<section id="ch1" class="chapter chapter-enter">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+  <div class="corner-tl"></div>
+  <div class="corner-br"></div>
+
+  <div class="ch-content">
+
+    <span class="ch-label" style="color:var(--ch1-accent)">Chapter 1</span>
+
+    <h1>Selamat<br><em>Ulang Tahun</em></h1>
+    <p class="subtitle">— untukmu, hari ini dan seterusnya</p>
+
+    <span class="sp-lg"></span>
+
+    <!-- sun + text side by side -->
+    <div class="d-flex align-items-start gap-4">
+      <div class="sun-ring"><div class="sun-inner">🎂</div></div>
+      <p style="padding-top:0.25rem;">Hari ini langit menyimpan satu nama — namamu. Semesta sejenak berhenti untuk merayakan momen kecil yang sungguh besar ini: kamu, bernapas, bertumbuh, dan masih ada di sini.</p>
+    </div>
+
+    <span class="sp-md"></span>
+    <p>Selamat ulang tahun. Bukan sekadar kata — ini sebuah pelukan hangat yang dikemas dalam deretan huruf, dikirim melintasi jarak, untuk sampai tepat di hatimu.</p>
+
+    <span class="sp-md"></span>
+    <div class="confetti-strip">
+      <div class="c-dot" style="width:9px;height:9px;background:#d9714e;animation-delay:0s"></div>
+      <div class="c-dot" style="width:9px;height:9px;background:#f9c86a;animation-delay:.15s"></div>
+      <div class="c-dot" style="width:9px;height:9px;background:#6aaec8;animation-delay:.3s"></div>
+      <div class="c-dot" style="width:11px;height:7px;background:#8e7fc0;animation-delay:.45s"></div>
+      <div class="c-dot" style="width:9px;height:9px;background:#52b07e;animation-delay:.6s"></div>
+      <div class="c-dot" style="width:7px;height:11px;background:#f0a472;animation-delay:.75s"></div>
+      <div class="c-dot" style="width:9px;height:9px;background:#b8aee0;animation-delay:.9s"></div>
+      <div class="c-dot" style="width:9px;height:9px;background:#d9714e;animation-delay:1.05s"></div>
+    </div>
+
+    <!-- divider -->
+    <div class="ch-divider" style="color:var(--ch1-accent)"></div>
+
+    <!-- PHOTO SECTION -->
+    <p class="photo-section-title" style="color:var(--ch1-accent)">
+      📷 &nbsp;Kenangan yang kita bingkai bersama
+    </p>
+    <span class="sp-sm"></span>
+
+    <!-- Polaroid wall — replace src="" with your image paths -->
+    <div class="photo-wall">
+      <div class="polaroid" style="--rot:-3deg">
+        <div class="polaroid-img">
+          <img src="" alt="foto 1"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="p-placeholder" style="display:none"><span>📸</span>Foto<br>Kenangan</div>
+        </div>
+        <div class="polaroid-cap">kenangan ①</div>
+      </div>
+      <div class="polaroid" style="--rot:2.5deg">
+        <div class="polaroid-img">
+          <img src="" alt="foto 2"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="p-placeholder" style="display:none"><span>📸</span>Foto<br>Kenangan</div>
+        </div>
+        <div class="polaroid-cap">kenangan ②</div>
+      </div>
+      <div class="polaroid" style="--rot:-1.5deg">
+        <div class="polaroid-img">
+          <img src="" alt="foto 3"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="p-placeholder" style="display:none"><span>📸</span>Foto<br>Kenangan</div>
+        </div>
+        <div class="polaroid-cap">kenangan ③</div>
+      </div>
+      <div class="polaroid" style="--rot:3.5deg">
+        <div class="polaroid-img">
+          <img src="" alt="foto 4"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="p-placeholder" style="display:none"><span>📸</span>Foto<br>Kenangan</div>
+        </div>
+        <div class="polaroid-cap">kenangan ④</div>
+      </div>
+      <div class="polaroid" style="--rot:-2deg">
+        <div class="polaroid-img">
+          <img src="" alt="foto 5"
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="p-placeholder" style="display:none"><span>📸</span>Foto<br>Kenangan</div>
+        </div>
+        <div class="polaroid-cap">kenangan ⑤</div>
+      </div>
+    </div>
+    <p class="photo-scroll-hint" style="color:var(--ch1-muted)">← geser untuk lihat semua foto →</p>
+
+    <div class="nav-row">
+      <span></span>
+      <a href="#ch2" class="btn-story btn-ch1">Lanjutkan cerita &rarr;</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════
+     CH2 — WAKTU YANG TERUS BERLALU
+═══════════════════════════════════════ -->
+<section id="ch2" class="chapter chapter-enter">
+  <div class="starfield" id="starfield"></div>
+
+  <div class="ch-content">
+
+    <span class="ch-label" style="color:var(--ch2-accent)">Chapter 2</span>
+
+    <h2>Waktu yang<br><em>Terus Berlalu</em></h2>
+
+    <span class="sp-md"></span>
+    <p>Setiap ulang tahun adalah tanda bahwa waktu tidak pernah berdiam diri. Ia terus berjalan — membawa serta kenangan yang melunak di ujung ingatan, dan momen-momen kecil yang ternyata paling berharga.</p>
+
+    <span class="sp-lg"></span>
+
+    <div class="timeline">
+      <div class="tl-item">
+        <div class="tl-dot">✦</div>
+        <div class="tl-text">
+          <strong>Tawa yang Tertinggal</strong>
+          Ada gelak tawa yang masih bergema — di sudut kamar, di atas meja makan, di antara percakapan yang tak pernah ingin berakhir.
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">✦</div>
+        <div class="tl-text">
+          <strong>Momen yang Membentukmu</strong>
+          Setiap kesulitan yang berhasil kau lalui adalah batu bata yang membangun siapa dirimu sekarang.
+        </div>
+      </div>
+      <div class="tl-item">
+        <div class="tl-dot">✦</div>
+        <div class="tl-text">
+          <strong>Orang-orang yang Singgah</strong>
+          Beberapa pergi, beberapa tinggal — semua meninggalkan jejak di peta hidupmu.
+        </div>
+      </div>
+    </div>
+
+    <div class="ch-divider" style="color:var(--ch2-accent)"></div>
+
+    <!-- PHOTO SECTION: Filmstrip -->
+    <p class="photo-section-title" style="color:var(--ch2-accent)">
+      🎞 &nbsp;Rekaman waktu yang tak terlupakan
+    </p>
+    <span class="sp-sm"></span>
+
+    <div class="filmstrip">
+      <div class="filmstrip-inner">
+        <div class="film-cell">
+          <div class="film-frame">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="f-placeholder" style="display:none"><span>🎞</span>Foto<br>Kenangan</div>
+          </div>
+          <p class="film-lbl">frame 01</p>
+        </div>
+        <div class="film-cell">
+          <div class="film-frame">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="f-placeholder" style="display:none"><span>🎞</span>Foto<br>Kenangan</div>
+          </div>
+          <p class="film-lbl">frame 02</p>
+        </div>
+        <div class="film-cell">
+          <div class="film-frame">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="f-placeholder" style="display:none"><span>🎞</span>Foto<br>Kenangan</div>
+          </div>
+          <p class="film-lbl">frame 03</p>
+        </div>
+        <div class="film-cell">
+          <div class="film-frame">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="f-placeholder" style="display:none"><span>🎞</span>Foto<br>Kenangan</div>
+          </div>
+          <p class="film-lbl">frame 04</p>
+        </div>
+        <div class="film-cell">
+          <div class="film-frame">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="f-placeholder" style="display:none"><span>🎞</span>Foto<br>Kenangan</div>
+          </div>
+          <p class="film-lbl">frame 05</p>
+        </div>
+      </div>
+    </div>
+    <p class="photo-scroll-hint" style="color:var(--ch2-muted)">← geser filmstrip →</p>
+
+    <div class="nav-row">
+      <a href="#ch1" class="btn-story btn-back">&larr; Kembali</a>
+      <a href="#ch3" class="btn-story btn-ch2">Selanjutnya &rarr;</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════
+     CH3 — MASA DEPAN YANG MASIH KELABU
+═══════════════════════════════════════ -->
+<section id="ch3" class="chapter chapter-enter">
+  <div class="fog-layer">
+    <div class="fog-band" style="top:12%;--spd:13s"></div>
+    <div class="fog-band" style="top:44%;--spd:19s;animation-direction:alternate-reverse"></div>
+    <div class="fog-band" style="top:72%;--spd:25s"></div>
+  </div>
+
+  <div class="ch-content">
+
+    <span class="ch-label" style="color:var(--ch3-accent)">Chapter 3</span>
+
+    <h2>Masa Depan yang<br><em>Masih Kelabu</em></h2>
+
+    <span class="sp-md"></span>
+    <p>Jujur saja — kita tidak tahu apa yang menanti di ujung jalan. Kabut menutupi banyak hal, dan itu bukan sesuatu yang perlu ditakuti.</p>
+
+    <span class="sp-sm"></span>
+    <p>Kelabu bukan berarti gelap. Ia hanya berarti cerita belum selesai ditulis. Dan kamu adalah penulisnya.</p>
+
+    <span class="sp-md"></span>
+    <div class="mist-card">
+      <div class="qmark">"</div>
+      <blockquote>Ketidakpastian bukan musuh. Ia adalah ruang kosong tempat kemungkinan tumbuh — seluas yang kamu izinkan.</blockquote>
+      <cite>— Untuk kamu, yang sedang mencari arah</cite>
+    </div>
+
+    <span class="sp-sm"></span>
+    <p>Di antara semua yang belum jelas itu, satu hal yang pasti: kamu tidak sedang berjalan sendirian.</p>
+
+    <div class="ch-divider" style="color:var(--ch3-accent)"></div>
+
+    <!-- PHOTO SECTION: Ornate grid -->
+    <p class="photo-section-title" style="color:var(--ch3-accent)">
+      🌙 &nbsp;Momen yang kita simpan dalam senyap
+    </p>
+    <span class="sp-sm"></span>
+
+    <div class="photo-grid">
+      <div class="ornate">
+        <div class="ornate-img">
+          <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="o-placeholder" style="display:none"><span>🌫️</span>Foto<br>Kenangan</div>
+        </div>
+        <p class="ornate-cap">saat itu, kita bahagia ①</p>
+      </div>
+      <div class="ornate">
+        <div class="ornate-img">
+          <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="o-placeholder" style="display:none"><span>🌫️</span>Foto<br>Kenangan</div>
+        </div>
+        <p class="ornate-cap">saat itu, kita bahagia ②</p>
+      </div>
+      <div class="ornate">
+        <div class="ornate-img">
+          <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="o-placeholder" style="display:none"><span>🌫️</span>Foto<br>Kenangan</div>
+        </div>
+        <p class="ornate-cap">saat itu, kita bahagia ③</p>
+      </div>
+      <div class="ornate">
+        <div class="ornate-img">
+          <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+          <div class="o-placeholder" style="display:none"><span>🌫️</span>Foto<br>Kenangan</div>
+        </div>
+        <p class="ornate-cap">saat itu, kita bahagia ④</p>
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <a href="#ch2" class="btn-story btn-back">&larr; Kembali</a>
+      <a href="#ch4" class="btn-story btn-ch3">Penutup &rarr;</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════
+     CH4 — HARAPAN YANG TAK TERHENTIKAN
+═══════════════════════════════════════ -->
+<section id="ch4" class="chapter chapter-enter">
+  <div class="aurora">
+    <div class="aurora-band" style="top:4%;background:linear-gradient(90deg,#1a6e4a,#5eb88a,#3aa870);--spd:9s"></div>
+    <div class="aurora-band" style="top:40%;background:linear-gradient(90deg,#2e8c5a,#7ee8a4,#2e8c5a);--spd:14s;animation-direction:alternate-reverse"></div>
+    <div class="aurora-band" style="bottom:7%;background:linear-gradient(90deg,#0d4f2e,#4cc880,#0d4f2e);--spd:11s"></div>
+  </div>
+
+  <div class="ch-content">
+
+    <span class="ch-label" style="color:var(--ch4-accent)">Chapter 4 — Penutup</span>
+
+    <h2>Harapan yang<br><em>Tak Terhentikan</em></h2>
+
+    <span class="sp-md"></span>
+    <p>Di akhir cerita ini, satu hal yang ingin aku sampaikan: semoga setiap hari yang kamu jalani membawa kebaikan — kecil maupun besar — yang pelan-pelan mengisi hidupmu dengan rasa cukup, dan lebih dari cukup.</p>
+
+    <span class="sp-lg"></span>
+    <div class="wish-list">
+      <div class="wish-item">
+        <div class="wish-icon">🌿</div>
+        <div class="wish-text"><strong>Kesehatan & Ketenangan</strong>Tubuh yang kuat, pikiran yang jernih, dan hati yang damai.</div>
+      </div>
+      <div class="wish-item">
+        <div class="wish-icon">🔥</div>
+        <div class="wish-text"><strong>Semangat yang Membara</strong>Agar setiap pagi kamu bangun dengan alasan untuk terus melangkah.</div>
+      </div>
+      <div class="wish-item">
+        <div class="wish-icon">🤝</div>
+        <div class="wish-text"><strong>Cinta di Sekelilingmu</strong>Orang-orang yang mencintaimu apa adanya.</div>
+      </div>
+      <div class="wish-item">
+        <div class="wish-icon">✨</div>
+        <div class="wish-text"><strong>Mimpi yang Terus Tumbuh</strong>Tidak pernah berhenti percaya bahwa yang terbaik masih di depan.</div>
+      </div>
+    </div>
+
+    <div class="ch-divider" style="color:var(--ch4-accent)"></div>
+
+    <!-- PHOTO SECTION: Botanical -->
+    <p class="photo-section-title" style="color:var(--ch4-accent)">
+      🌱 &nbsp;Taman kenangan yang terus tumbuh
+    </p>
+    <span class="sp-sm"></span>
+
+    <div class="botanical-wrap">
+      <span class="leaf-corner tl">🍃</span>
+      <span class="leaf-corner tr">🍃</span>
+      <span class="leaf-corner bl">🍃</span>
+      <span class="leaf-corner br">🍃</span>
+      <div class="botanical-scroll">
+        <div class="botanical-cell">
+          <div class="botanical-photo">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="b-placeholder" style="display:none"><span>🌿</span>Foto<br>Kamu</div>
+          </div>
+          <p class="botanical-cap">tumbuh ①</p>
+        </div>
+        <div class="botanical-cell">
+          <div class="botanical-photo">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="b-placeholder" style="display:none"><span>🌿</span>Foto<br>Kamu</div>
+          </div>
+          <p class="botanical-cap">tumbuh ②</p>
+        </div>
+        <div class="botanical-cell">
+          <div class="botanical-photo">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="b-placeholder" style="display:none"><span>🌿</span>Foto<br>Kamu</div>
+          </div>
+          <p class="botanical-cap">tumbuh ③</p>
+        </div>
+        <div class="botanical-cell">
+          <div class="botanical-photo">
+            <img src="" alt="" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/>
+            <div class="b-placeholder" style="display:none"><span>🌿</span>Foto<br>Kamu</div>
+          </div>
+          <p class="botanical-cap">tumbuh ④</p>
+        </div>
+      </div>
+    </div>
+    <p class="photo-scroll-hint" style="color:var(--ch4-muted)">← geser untuk lihat →</p>
+
+    <span class="sp-md"></span>
+    <div class="final-seal">
+      <div class="seal-ring">🌱</div>
+      <p class="seal-tagline">Selamat bertumbuh, setahun lebih bijak.</p>
+    </div>
+
+    <div class="nav-row">
+      <a href="#ch3" class="btn-story btn-back">&larr; Kembali</a>
+      <a href="#ch1" class="btn-story btn-ch4">Dari awal ↺</a>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* Starfield */
+  const sf = document.getElementById('starfield');
+  for (let i = 0; i < 90; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const sz = Math.random() * 2.4 + 0.5;
+    s.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--dur:${2+Math.random()*5}s;--op:${0.35+Math.random()*0.65};animation-delay:${Math.random()*6}s;`;
+    sf.appendChild(s);
+  }
+
+  /* Progress + dots */
+  const chapters = document.querySelectorAll('.chapter');
+  const dots = document.querySelectorAll('.dot');
+  const bar = document.getElementById('progress-bar');
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.remove('chapter-enter');
+        e.target.classList.add('chapter-visible');
+      }
+    });
+  }, { threshold: 0.22 });
+  chapters.forEach(c => io.observe(c));
+
+  function onScroll() {
+    const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+    bar.style.width = pct + '%';
+    let ci = 0;
+    chapters.forEach((c,i) => { if (c.getBoundingClientRect().top <= window.innerHeight * 0.5) ci = i; });
+    dots.forEach((d,i) => d.classList.toggle('active', i === ci));
+  }
+  window.addEventListener('scroll', onScroll, { passive:true });
+  dots.forEach(d => d.addEventListener('click', () =>
+    chapters[+d.dataset.ch].scrollIntoView({ behavior:'smooth' })
+  ));
+</script>
+</body>
+</html>
